@@ -2,6 +2,8 @@ package app
 
 import (
 	"fmt"
+	"log"
+	"strings"
 
 	config_reader "github.com/rtm-se/ai-commit-message/internal/clients/config-reader"
 	"github.com/rtm-se/ai-commit-message/internal/clients/git"
@@ -33,8 +35,16 @@ func (a *AppAICommit) prepareFullPrompt() string {
 	return fmt.Sprintf(a.config.Prompt + diff)
 }
 
+func (a *AppAICommit) getCommitPrefix() string {
+	currentGitBranch := a.gitClient.GetBranch()
+	trimmed := strings.SplitAfter(currentGitBranch, "/")
+	ticket := trimmed[len(trimmed)-1]
+	log.Println("Prefix detected as", ticket)
+	return fmt.Sprintf("[%v]", ticket)
+}
 func (a *AppAICommit) CreateCommit() string {
 	prompt := a.prepareFullPrompt()
-	a.Ollama.GetResponse(prompt)
-	return ""
+	commitMessage := a.Ollama.GetResponse(prompt)
+	prefix := a.getCommitPrefix()
+	return prefix + commitMessage
 }
