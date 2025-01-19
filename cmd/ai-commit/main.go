@@ -1,12 +1,18 @@
 package main
 
-import "github.com/rtm-se/ai-commit-message/internal/clients/config-reader"
+import (
+	"log"
+
+	"github.com/rtm-se/ai-commit-message/internal/clients/config-reader"
+)
 import "github.com/rtm-se/ai-commit-message/internal/app"
 
 func main() {
-	println("ai-commit started")
+	log.Println("ai-commit started")
 	config := config_reader.NewConfig()
 	a := app.NewApp(config)
-	commit := a.CreateCommit()
-	println(commit)
+	a.StageAllFiles()
+	commitMessage := a.CreateCommit()
+	log.Println(commitMessage)
+	a.CommitWithMessage(commitMessage)
 }

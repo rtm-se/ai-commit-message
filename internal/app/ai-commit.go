@@ -48,3 +48,13 @@ func (a *AppAICommit) CreateCommit() string {
 	prefix := a.getCommitPrefix()
 	return prefix + commitMessage
 }
+
+func (a *AppAICommit) StageAllFiles() {
+	stagedFiles := a.gitClient.Stage()
+	log.Printf("Staged files\n %v", stagedFiles)
+}
+
+func (a *AppAICommit) CommitWithMessage(message string) {
+	a.gitClient.Commit(message)
+	log.Printf("Changes Committed")
+}
