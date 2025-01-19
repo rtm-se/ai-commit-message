@@ -21,6 +21,5 @@ func (lama *OllamaClient) GetResponse(fullPrompt string) string {
 	if err != nil {
 		panic(err)
 	}
-	println(output.Content)
-	return ""
+	return output.Content
 }
