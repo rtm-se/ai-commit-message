@@ -45,8 +45,16 @@ func (a *AppAICommit) getCommitPrefix() string {
 func (a *AppAICommit) CreateCommit() string {
 	prompt := a.prepareFullPrompt()
 	commitMessage := a.Ollama.GetResponse(prompt)
+	if a.config.CLeanThinkBlock {
+		commitMessage = a.deleteThinkBlockFromModelResponse(commitMessage)
+	}
 	prefix := a.getCommitPrefix()
 	return prefix + commitMessage
+}
+
+func (a *AppAICommit) deleteThinkBlockFromModelResponse(response string) string {
+	ss := strings.SplitAfter(response, "</think>")
+	return strings.Replace(ss[len(ss)-1], "\n", "", 2)
 }
 
 func (a *AppAICommit) StageAllFiles() {
