@@ -44,7 +44,10 @@ func (g *GitCLient) GetBranch() string {
 }
 
 func (g *GitCLient) ResetToPreviousCommit(soft bool) string {
-	args := []string{"reset", "--soft", "HEAD~2"}
+	args := []string{"reset", "HEAD~1"}
+	if soft {
+		args = append(args, "--soft")
+	}
 	c, b := exec.Command("git", args...), new(strings.Builder)
 	c.Stdout = b
 	c.Run()

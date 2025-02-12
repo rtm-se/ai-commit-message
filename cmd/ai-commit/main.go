@@ -16,5 +16,9 @@ func main() {
 	a.StageAllFiles()
 	commitMessage := a.CreateCommit()
 	log.Println(commitMessage)
+	if !a.ShouldCommit() {
+		log.Println("Won't commit message, exiting...")
+		return
+	}
 	a.CommitWithMessage(commitMessage)
 }
