@@ -13,7 +13,7 @@ your local machine for development and testing purposes.
 ### Dependencies
 
 - Go (version 1.23 or later) - Download from https://golang.org/dl/
-- You will need https://ollama.com/ with mistrall or deepseek-r1 installed
+- Ollama with mistrall or deepseek-r1 installed - Download from https://ollama.com/
   after installing run the following
    ```
   ollama run deepseek-r1
@@ -52,4 +52,6 @@ upcoming changes:
 - 2 - feedback loop on commit messages
 - 3 - trying different models
 - 4 - add flags for different behaviours
-- 5 - add support for remote models  
+- 5 - add support for remote models
+- 6 - use opensource local model providers
+- 7 - separate commits into several chunks for even better results
