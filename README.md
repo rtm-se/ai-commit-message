@@ -13,6 +13,15 @@ your local machine for development and testing purposes.
 ### Dependencies
 
 - Go (version 1.23 or later) - Download from https://golang.org/dl/
+- You will need https://ollama.com/ with mistrall or deepseek-r1 installed
+  after installing run the following
+   ```
+  ollama run deepseek-r1
+   ```
+  or
+   ```
+  ollama run mistral
+   ```
 
 ### Installation
 
