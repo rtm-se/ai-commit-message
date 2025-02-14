@@ -41,9 +41,12 @@ func (a *AppAICommit) prepareFullPrompt() []string {
 
 func (a *AppAICommit) preparePromptsByFiles() []string {
 	diffs := a.gitClient.GetSeparatedDiffs()
-	prompts := make([]string, len(diffs))
-	for i, diff := range diffs {
-		prompts[i] = fmt.Sprintf(a.config.Prompt + "\n" + diff)
+	prompts := make([]string, 0)
+	for _, diff := range diffs {
+		if diff == "" {
+			continue
+		}
+		prompts = append(prompts, fmt.Sprintf(a.config.Prompt+"\n"+diff))
 	}
 	return prompts
 }
