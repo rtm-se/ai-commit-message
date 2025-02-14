@@ -1,8 +1,10 @@
 package app
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	config_reader "github.com/rtm-se/ai-commit-message/internal/clients/config-reader"
@@ -52,14 +54,28 @@ func (a *AppAICommit) CreateCommit() string {
 	return prefix + commitMessage
 }
 
+func (a *AppAICommit) ShouldCommit() bool {
+	fmt.Println("should we commit with the message above?")
+	reader := bufio.NewReader(os.Stdin)
+	_, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return true
+}
+
 func (a *AppAICommit) deleteThinkBlockFromModelResponse(response string) string {
 	ss := strings.SplitAfter(response, "</think>")
 	return strings.Replace(ss[len(ss)-1], "\n", "", 2)
 }
 
 func (a *AppAICommit) StageAllFiles() {
-	stagedFiles := a.gitClient.Stage()
-	log.Printf("Staged files\n %v", stagedFiles)
+	log.Printf("Staging files")
+	err := a.gitClient.Stage()
+	if err != "" {
+		panic(err)
+	}
 }
 
 func (a *AppAICommit) CommitWithMessage(message string) {
