@@ -39,7 +39,9 @@ func (builder *configBuilder) SetCleanThinkBlock() *configBuilder {
 
 func (builder *configBuilder) BuildConfig() *Config {
 	flag.Parse()
-	fmt.Println("model: " + *builder.model)
+	fmt.Printf("model: %v \n", *builder.model)
+	fmt.Printf("clean think block: %v, \n", *builder.cleanThinkBlock)
+	fmt.Printf("separate diff: %v \n", *builder.separateDiff)
 	return &Config{
 		Model:           *builder.model,
 		CLeanThinkBlock: *builder.cleanThinkBlock,
