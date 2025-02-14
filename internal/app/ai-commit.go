@@ -71,8 +71,11 @@ func (a *AppAICommit) deleteThinkBlockFromModelResponse(response string) string 
 }
 
 func (a *AppAICommit) StageAllFiles() {
-	stagedFiles := a.gitClient.Stage()
-	log.Printf("Staged files\n %v", stagedFiles)
+	log.Printf("Staging files")
+	err := a.gitClient.Stage()
+	if err != "" {
+		panic(err)
+	}
 }
 
 func (a *AppAICommit) CommitWithMessage(message string) {

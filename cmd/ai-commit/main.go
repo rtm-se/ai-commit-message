@@ -8,11 +8,11 @@ import (
 import "github.com/rtm-se/ai-commit-message/internal/app"
 
 func main() {
-	log.Println("ai-commit started")
 	builder := config_reader.NewConfigBuilder()
 	builder.SetModelFromFlag().SetCleanThinkBlock()
 	cfg := builder.BuildConfig()
 	a := app.NewApp(cfg)
+	log.Println("ai-commit started")
 	a.StageAllFiles()
 	commitMessage := a.CreateCommit()
 	log.Println(commitMessage)
