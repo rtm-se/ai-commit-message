@@ -43,3 +43,4 @@ upcoming changes:
 - 2 - feedback loop on commit messages
 - 3 - trying different models
 - 4 - add flags for different behaviours
+- 5 - add support for remote models  
