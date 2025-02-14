@@ -33,3 +33,9 @@ your local machine for development and testing purposes.
    ~/path-to-executable/main
    ```
 
+
+upcoming changes:
+-
+1 - feeding diff by files should yield better results
+2 - feedback loop on commit messages
+3 - trying different models
