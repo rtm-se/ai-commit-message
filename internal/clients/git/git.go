@@ -43,6 +43,9 @@ func (g *GitCLient) GetBranch() string {
 	return s
 }
 
+func (g *GitCLient) GetSeparatedDiffs() []string {
+	return strings.Split(g.GetDiff(), "diff --git")
+}
 func (g *GitCLient) ResetToPreviousCommit(soft bool) string {
 	args := []string{"reset", "HEAD~1"}
 	if soft {

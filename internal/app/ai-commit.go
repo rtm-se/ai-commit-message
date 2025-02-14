@@ -32,9 +32,20 @@ func (a *AppAICommit) prepareDiff() (string, error) {
 	return a.gitClient.GetDiff(), nil
 }
 
-func (a *AppAICommit) prepareFullPrompt() string {
+func (a *AppAICommit) prepareFullPrompt() []string {
+	fullPrompt := make([]string, 0)
 	diff := a.gitClient.GetDiff()
-	return fmt.Sprintf(a.config.Prompt + diff)
+	fullPrompt = append(fullPrompt, fmt.Sprintf(a.config.Prompt+diff))
+	return fullPrompt
+}
+
+func (a *AppAICommit) preparePromptsByFiles() []string {
+	diffs := a.gitClient.GetSeparatedDiffs()
+	prompts := make([]string, len(diffs))
+	for i, diff := range diffs {
+		prompts[i] = fmt.Sprintf(a.config.Prompt + "\n" + diff)
+	}
+	return prompts
 }
 
 func (a *AppAICommit) getCommitPrefix() string {
@@ -44,16 +55,30 @@ func (a *AppAICommit) getCommitPrefix() string {
 	log.Println("Prefix detected as", ticket)
 	return fmt.Sprintf("[%v]", ticket)
 }
+
 func (a *AppAICommit) CreateCommit() string {
-	prompt := a.prepareFullPrompt()
-	commitMessage := a.Ollama.GetResponse(prompt)
-	if a.config.CLeanThinkBlock {
-		commitMessage = a.deleteThinkBlockFromModelResponse(commitMessage)
+	var prompts []string
+
+	prompts = a.preparePromptsByFiles()
+	log.Printf("Detected %v files to prompt", len(prompts))
+	commitMessage := strings.Builder{}
+	commitMessage.WriteString(a.getCommitPrefix())
+	for _, prompt := range prompts {
+		partialCommitMessage := a.getResponseFromLLM(prompt)
+		log.Println(partialCommitMessage)
+		commitMessage.WriteString(partialCommitMessage)
+		commitMessage.WriteString("\n")
 	}
-	prefix := a.getCommitPrefix()
-	return prefix + commitMessage
+	return commitMessage.String()
 }
 
+func (a *AppAICommit) getResponseFromLLM(prompt string) string {
+	LLMResponse := a.Ollama.GetResponse(prompt)
+	if a.config.CLeanThinkBlock {
+		LLMResponse = a.deleteThinkBlockFromModelResponse(LLMResponse)
+	}
+	return LLMResponse
+}
 func (a *AppAICommit) ShouldCommit() bool {
 	fmt.Println("should we commit with the message above?")
 	reader := bufio.NewReader(os.Stdin)
