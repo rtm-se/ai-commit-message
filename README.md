@@ -26,13 +26,16 @@ your local machine for development and testing purposes.
    ```
 3. Build and run the application:
    ```
-   go build -o main
+   go build ./cmd/ai-commit/main.go
    ```
 4. navigate to your directory in which you wanna generate a commit and execute the file
    ```
    ~/path-to-executable/main
    ```
-
+   To use model with deepseek you can use following flags, by default it will use mistral model 
+   ```
+   ~/path/to/executable/main -model=deepseek-r1 -clean-think=true
+   ```
 
 upcoming changes:
 -
