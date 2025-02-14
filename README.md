@@ -36,6 +36,7 @@ your local machine for development and testing purposes.
 
 upcoming changes:
 -
-1 - feeding diff by files should yield better results
-2 - feedback loop on commit messages
-3 - trying different models
+- ~~1 - feeding diff by files should yield better results~~
+- 2 - feedback loop on commit messages
+- 3 - trying different models
+- 4 - add flags for different behaviours
