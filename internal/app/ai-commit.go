@@ -59,11 +59,18 @@ func (a *AppAICommit) getCommitPrefix() string {
 	return fmt.Sprintf("[%v]", ticket)
 }
 
-func (a *AppAICommit) CreateCommit() string {
-	var prompts []string
+func (a *AppAICommit) getPrompts() []string {
+	if !a.config.SeparateDiff {
+		return a.prepareFullPrompt()
+	}
+	return a.preparePromptsByFiles()
+}
 
-	prompts = a.preparePromptsByFiles()
-	log.Printf("Detected %v files to prompt", len(prompts))
+func (a *AppAICommit) CreateCommit() string {
+	prompts := a.getPrompts()
+	if a.config.SeparateDiff {
+		log.Printf("Detected %v files to prompt", len(prompts))
+	}
 	commitMessage := strings.Builder{}
 	commitMessage.WriteString(a.getCommitPrefix())
 	for _, prompt := range prompts {

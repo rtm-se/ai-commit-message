@@ -9,11 +9,13 @@ type Config struct {
 	Prompt          string
 	Model           string
 	CLeanThinkBlock bool
+	SeparateDiff    bool
 }
 
 type configBuilder struct {
 	model           *string
 	cleanThinkBlock *bool
+	separateDiff    *bool
 }
 
 func NewConfigBuilder() *configBuilder {
@@ -22,6 +24,11 @@ func NewConfigBuilder() *configBuilder {
 
 func (builder *configBuilder) SetModelFromFlag() *configBuilder {
 	builder.model = flag.String("model", "mistral", "Ollama model you want to use; default: mistral")
+	return builder
+}
+
+func (builder *configBuilder) SetSeparateFilesFromFlag() *configBuilder {
+	builder.separateDiff = flag.Bool("separate-diff-into-files", true, "feed whole diff into llm or separate into chunks")
 	return builder
 }
 

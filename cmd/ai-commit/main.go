@@ -9,7 +9,7 @@ import "github.com/rtm-se/ai-commit-message/internal/app"
 
 func main() {
 	builder := config_reader.NewConfigBuilder()
-	builder.SetModelFromFlag().SetCleanThinkBlock()
+	builder.SetModelFromFlag().SetCleanThinkBlock().SetSeparateFilesFromFlag()
 	cfg := builder.BuildConfig()
 	a := app.NewApp(cfg)
 	log.Println("ai-commit started")
