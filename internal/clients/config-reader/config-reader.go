@@ -9,11 +9,13 @@ type Config struct {
 	Prompt          string
 	Model           string
 	CLeanThinkBlock bool
+	SeparateDiff    bool
 }
 
 type configBuilder struct {
 	model           *string
 	cleanThinkBlock *bool
+	separateDiff    *bool
 }
 
 func NewConfigBuilder() *configBuilder {
@@ -25,6 +27,11 @@ func (builder *configBuilder) SetModelFromFlag() *configBuilder {
 	return builder
 }
 
+func (builder *configBuilder) SetSeparateFilesFromFlag() *configBuilder {
+	builder.separateDiff = flag.Bool("separate-diff-into-files", true, "feed whole diff into llm or separate into chunks")
+	return builder
+}
+
 func (builder *configBuilder) SetCleanThinkBlock() *configBuilder {
 	builder.cleanThinkBlock = flag.Bool("clean-think", false, "should clean <think></think> block form model response")
 	return builder
@@ -32,7 +39,9 @@ func (builder *configBuilder) SetCleanThinkBlock() *configBuilder {
 
 func (builder *configBuilder) BuildConfig() *Config {
 	flag.Parse()
-	fmt.Println("model: " + *builder.model)
+	fmt.Printf("model: %v \n", *builder.model)
+	fmt.Printf("clean think block: %v, \n", *builder.cleanThinkBlock)
+	fmt.Printf("separate diff: %v \n", *builder.separateDiff)
 	return &Config{
 		Model:           *builder.model,
 		CLeanThinkBlock: *builder.cleanThinkBlock,
