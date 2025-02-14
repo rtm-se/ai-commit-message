@@ -10,6 +10,7 @@ import (
 	config_reader "github.com/rtm-se/ai-commit-message/internal/clients/config-reader"
 	"github.com/rtm-se/ai-commit-message/internal/clients/git"
 	"github.com/rtm-se/ai-commit-message/internal/clients/ollama"
+	"github.com/rtm-se/ai-commit-message/internal/clients/spinner"
 )
 
 type AppAICommit struct {
@@ -73,8 +74,11 @@ func (a *AppAICommit) CreateCommit() string {
 	}
 	commitMessage := strings.Builder{}
 	commitMessage.WriteString(a.getCommitPrefix())
+	spinner := spinner.NewSpinner()
 	for _, prompt := range prompts {
+		go spinner.Spin()
 		partialCommitMessage := a.getResponseFromLLM(prompt)
+		spinner.Stop()
 		log.Println(partialCommitMessage)
 		commitMessage.WriteString(partialCommitMessage)
 		commitMessage.WriteString("\n")
