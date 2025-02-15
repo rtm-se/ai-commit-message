@@ -79,7 +79,9 @@ func (a *AppAICommit) CreateCommit() string {
 		go spn.Spin()
 		partialCommitMessage := a.getResponseFromLLM(prompt)
 		spn.Stop()
-		log.Println(partialCommitMessage)
+		if len(prompts) > 1 {
+			log.Println(partialCommitMessage)
+		}
 		commitMessage.WriteString(partialCommitMessage)
 		commitMessage.WriteString("\n")
 	}
