@@ -74,11 +74,11 @@ func (a *AppAICommit) CreateCommit() string {
 	}
 	commitMessage := strings.Builder{}
 	commitMessage.WriteString(a.getCommitPrefix())
-	spinner := spinner.NewSpinner()
+	spn := spinner.NewSpinner()
 	for _, prompt := range prompts {
-		go spinner.Spin()
+		go spn.Spin()
 		partialCommitMessage := a.getResponseFromLLM(prompt)
-		spinner.Stop()
+		spn.Stop()
 		log.Println(partialCommitMessage)
 		commitMessage.WriteString(partialCommitMessage)
 		commitMessage.WriteString("\n")
