@@ -49,9 +49,10 @@ your local machine for development and testing purposes.
 upcoming changes:
 -
 - ~~1 - feeding diff by files should yield better results~~
-- 2 - feedback loop on commit messages
+- ~~2 - feedback loop on commit messages~~
 - 3 - trying different models
 - 4 - add flags for different behaviours
 - 5 - add support for remote models
 - 6 - use opensource local model providers
 - 7 - separate commits into several chunks for even better results
+- 8 - add better documentation got flags options
