@@ -34,7 +34,10 @@ func (s *Spinner) putChar(c string) {
 }
 
 func (s *Spinner) Stop() {
-	defer close(s.stop)
+	defer func() {
+		close(s.stop)
+		s.stop = nil
+	}()
 	s.stop <- true
 	s.wg.Wait()
 	s.clearLine()
@@ -43,6 +46,9 @@ func (s *Spinner) Stop() {
 
 // should be run in Gorutine
 func (s *Spinner) Spin() {
+	if s.stop == nil {
+		s.stop = make(chan bool)
+	}
 	defer s.wg.Done()
 	s.wg.Add(1)
 	s.hideCursor()

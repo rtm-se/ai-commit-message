@@ -52,7 +52,7 @@ func (a *AppAICommit) preparePromptsByFiles() []string {
 	return prompts
 }
 
-func (a *AppAICommit) getCommitPrefix() string {
+func (a *AppAICommit) GetCommitPrefix() string {
 	currentGitBranch := a.gitClient.GetBranch()
 	trimmed := strings.SplitAfter(currentGitBranch, "/")
 	ticket := trimmed[len(trimmed)-1]
@@ -73,13 +73,14 @@ func (a *AppAICommit) CreateCommit() string {
 		log.Printf("Detected %v files to prompt", len(prompts))
 	}
 	commitMessage := strings.Builder{}
-	commitMessage.WriteString(a.getCommitPrefix())
-	spinner := spinner.NewSpinner()
+	spn := spinner.NewSpinner()
 	for _, prompt := range prompts {
-		go spinner.Spin()
+		go spn.Spin()
 		partialCommitMessage := a.getResponseFromLLM(prompt)
-		spinner.Stop()
-		log.Println(partialCommitMessage)
+		spn.Stop()
+		if len(prompts) > 1 {
+			log.Println(partialCommitMessage)
+		}
 		commitMessage.WriteString(partialCommitMessage)
 		commitMessage.WriteString("\n")
 	}
@@ -104,6 +105,9 @@ func (a *AppAICommit) ShouldCommit() bool {
 	return true
 }
 
+func (a *AppAICommit) ShouldLoopResponse() bool {
+	return a.config.Loop
+}
 func (a *AppAICommit) deleteThinkBlockFromModelResponse(response string) string {
 	ss := strings.SplitAfter(response, "</think>")
 	return strings.Replace(ss[len(ss)-1], "\n", "", 2)
@@ -120,4 +124,16 @@ func (a *AppAICommit) StageAllFiles() {
 func (a *AppAICommit) CommitWithMessage(message string) {
 	a.gitClient.Commit(message)
 	log.Printf("Changes Committed")
+}
+
+func (a *AppAICommit) getLoopPrompt(commitMessage string) string {
+	return fmt.Sprintf(a.config.LoopPrompt + "\n" + commitMessage)
+}
+func (a *AppAICommit) LoopForFeedback(commitMessage string) string {
+	loopPrompt := a.getLoopPrompt(commitMessage)
+	spn := spinner.NewSpinner()
+	go spn.Spin()
+	loopedBack := a.getResponseFromLLM(loopPrompt)
+	spn.Stop()
+	return loopedBack
 }
