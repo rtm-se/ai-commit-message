@@ -2,7 +2,9 @@ package config_reader
 
 import (
 	"flag"
-	"fmt"
+	"log"
+
+	constants "github.com/rtm-se/ai-commit-message/internal"
 )
 
 type Config struct {
@@ -10,12 +12,15 @@ type Config struct {
 	Model           string
 	CLeanThinkBlock bool
 	SeparateDiff    bool
+	LoopPrompt      string
+	Loop            bool
 }
 
 type configBuilder struct {
 	model           *string
 	cleanThinkBlock *bool
 	separateDiff    *bool
+	loop            *bool
 }
 
 func NewConfigBuilder() *configBuilder {
@@ -32,6 +37,11 @@ func (builder *configBuilder) SetSeparateFilesFromFlag() *configBuilder {
 	return builder
 }
 
+func (builder *configBuilder) SetLoopFromFlag() *configBuilder {
+	builder.loop = flag.Bool("loop", false, "feed response into llm again to gain shortened result")
+	return builder
+}
+
 func (builder *configBuilder) SetCleanThinkBlock() *configBuilder {
 	builder.cleanThinkBlock = flag.Bool("clean-think", false, "should clean <think></think> block form model response")
 	return builder
@@ -39,13 +49,18 @@ func (builder *configBuilder) SetCleanThinkBlock() *configBuilder {
 
 func (builder *configBuilder) BuildConfig() *Config {
 	flag.Parse()
-	fmt.Printf("model: %v \n", *builder.model)
-	fmt.Printf("clean think block: %v, \n", *builder.cleanThinkBlock)
-	fmt.Printf("separate diff: %v \n", *builder.separateDiff)
+	log.Printf("model: %v \n", *builder.model)
+	log.Printf("clean think block: %v, \n", *builder.cleanThinkBlock)
+	log.Printf("separate diff: %v \n", *builder.separateDiff)
+	if *builder.loop {
+		log.Printf("loop: %v \n", *builder.loop)
+	}
 	return &Config{
 		Model:           *builder.model,
 		CLeanThinkBlock: *builder.cleanThinkBlock,
-		Prompt: "Write a professional short git commit message based on the a diff below in English language\n" +
-			"Do not preface the commit with anything, use the present tense, return the full sentence, and use the conventional commits specification (<type in lowercase>: <subject>):\n",
+		SeparateDiff:    *builder.separateDiff,
+		Loop:            *builder.loop,
+		Prompt:          constants.Prompt,
+		LoopPrompt:      constants.LoopPrompt,
 	}
 }
