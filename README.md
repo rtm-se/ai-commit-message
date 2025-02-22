@@ -57,3 +57,4 @@ upcoming changes:
 - 7 - separate commits into several chunks for even better results
 - 8 - add better documentation for flags options
 - 9 - improve prompts for better results
+- 10 - separate config file
