@@ -14,6 +14,8 @@ type Config struct {
 	SeparateDiff    bool
 	LoopPrompt      string
 	Loop            bool
+	LLMEndpoint     string
+	Interactive     bool
 }
 
 type configBuilder struct {
@@ -21,6 +23,9 @@ type configBuilder struct {
 	cleanThinkBlock *bool
 	separateDiff    *bool
 	loop            *bool
+	interactive     *bool
+
+	llmEndpoint *string
 }
 
 func NewConfigBuilder() *configBuilder {
@@ -42,13 +47,26 @@ func (builder *configBuilder) SetLoopFromFlag() *configBuilder {
 	return builder
 }
 
+func (builder *configBuilder) SetApiEndpointFromFlag() *configBuilder {
+	builder.llmEndpoint = flag.String("llm-endpoint", "http://localhost:11434", "llm endpoint to use; default: ollama default api endpoint")
+	return builder
+}
+
 func (builder *configBuilder) SetCleanThinkBlock() *configBuilder {
 	builder.cleanThinkBlock = flag.Bool("clean-think", false, "should clean <think></think> block form model response")
 	return builder
 }
 
+func (builder *configBuilder) SetInteractive() *configBuilder {
+	builder.interactive = flag.Bool("interactive", true, "will prompt with options step by step during process")
+	return builder
+}
+
 func (builder *configBuilder) BuildConfig() *Config {
 	flag.Parse()
+	if *builder.interactive {
+		log.Println("Starting in interactive mode")
+	}
 	log.Printf("model: %v \n", *builder.model)
 	log.Printf("clean think block: %v, \n", *builder.cleanThinkBlock)
 	log.Printf("separate diff: %v \n", *builder.separateDiff)
@@ -62,5 +80,7 @@ func (builder *configBuilder) BuildConfig() *Config {
 		Loop:            *builder.loop,
 		Prompt:          constants.Prompt,
 		LoopPrompt:      constants.LoopPrompt,
+		LLMEndpoint:     *builder.llmEndpoint,
+		Interactive:     *builder.interactive,
 	}
 }

@@ -9,19 +9,13 @@ import (
 
 func main() {
 	builder := config_reader.NewConfigBuilder()
-	builder.SetModelFromFlag().SetCleanThinkBlock().SetSeparateFilesFromFlag().SetLoopFromFlag()
+	builder.SetModelFromFlag().SetCleanThinkBlock().SetSeparateFilesFromFlag().SetLoopFromFlag().SetApiEndpointFromFlag().SetInteractive()
 	cfg := builder.BuildConfig()
 	a := app.NewApp(cfg)
 	log.Println("ai-commit started")
 	a.StageAllFiles()
-	commitMessage := a.CreateCommit()
-	log.Println(commitMessage)
-
-	if a.ShouldLoopResponse() {
-		loopedCommitMessage := a.LoopForFeedback(commitMessage)
-		log.Println(loopedCommitMessage)
-	}
-	if !a.ShouldCommit() {
+	commitMessage := a.GetCommitMessage()
+	if !a.ShouldCommit(commitMessage) {
 		log.Println("Won't commit message, exiting...")
 		return
 	}
