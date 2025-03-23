@@ -2,8 +2,11 @@ package git_client
 
 import (
 	"os/exec"
+	"regexp"
 	"strings"
 )
+
+const DiffBlockRE = "@@[^a-z]+[+|-]+[0-9]+[^a-z]+@@"
 
 type GitCLient struct {
 }
@@ -43,9 +46,15 @@ func (g *GitCLient) GetBranch() string {
 	return s
 }
 
-func (g *GitCLient) GetSeparatedDiffs() []string {
+func (g *GitCLient) GetSeparatedDiffByFiles() []string {
 	return strings.Split(g.GetDiff(), "diff --git")
 }
+
+func (g *GitCLient) GetSeparatedDiffByBlocks() []string {
+	re := regexp.MustCompile(DiffBlockRE)
+	return re.Split(g.GetDiff(), -1)
+}
+
 func (g *GitCLient) ResetToPreviousCommit(soft bool) string {
 	args := []string{"reset", "HEAD~1"}
 	if soft {
