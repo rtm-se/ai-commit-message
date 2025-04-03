@@ -11,7 +11,7 @@ These instructions will get you a copy of the project up and running on
 your local machine for development and testing purposes.
 
 ### Dependencies
-
+- git (tested on version 2.48.1)
 - Go (version 1.23 or later) - Download from https://golang.org/dl/
 - Ollama with mistrall or deepseek-r1 installed - Download from https://ollama.com/
   after installing run the following
@@ -23,7 +23,15 @@ your local machine for development and testing purposes.
   ollama run mistral
    ```
 
-### Installation
+## installation: script
+1. use provided following script in a repo root to clean build directory, rebuild project, and add the bin folder with binary to PATH
+   ```bash
+   source scripts.sh
+   ```
+    after doing so you will be able to just use `auto-commit` command in any git repo
+    
+
+## Installation: manual
 
 1. Clone the repository:
    ```
@@ -46,6 +54,13 @@ your local machine for development and testing purposes.
    ~/path/to/executable/main -model=deepseek-r1 -clean-think=true
    ```
 
+## make file commands:
+```bash
+make install
+```
+Will try to compile project locally into ./bin directory
+
+
 upcoming changes:
 -
 - ~~1 - feeding diff by files should yield better results~~
@@ -54,7 +69,7 @@ upcoming changes:
 - 4 - add flags for different behaviours
 - 5 - add support for remote models
 - 6 - support opensource local model providers
-- 7 - separate commits into several chunks for even better results
+- ~~7 - separate commits into several chunks for even better results~~
 - 8 - add better documentation for flags options
 - 9 - improve prompts for better results
 - 10 - separate config file
@@ -63,3 +78,7 @@ upcoming changes:
 - 13 - automatically reject messages longer than certain number of characters 
 - 14 - support auto git diff context for smaller changes to give llm more lines to process
 - 15 - improve visibility on progress for creating commit message
+- 16 - custom prefix or use prefix from previous message
+- 17 - generate md doc for the diff
+- 18 - mixed prompt generation (choosing if you want to split files into several contexts)
+- 19 - support special diff splitters for better context
