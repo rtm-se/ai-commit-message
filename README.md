@@ -60,6 +60,13 @@ make install
 ```
 Will try to compile project locally into ./bin directory
 
+bad usecases: 
+one single change in a long line
+
+Pro-tips:
+-
+- Even tho deepseek-r1 is supported with local model it's not the best model for speed, use it on more trickier commits and be ready to clean up th final message
+- 
 
 upcoming changes:
 -
@@ -75,10 +82,11 @@ upcoming changes:
 - 10 - separate config file
 - 11 - support pattern for skipping files
 - 12 - interactive mode (semi done, needs improvements)
-- 13 - automatically reject messages longer than certain number of characters 
+- ~~13 - automatically reject messages longer than certain number of characters~~
 - 14 - support auto git diff context for smaller changes to give llm more lines to process
 - 15 - improve visibility on progress for creating commit message
 - 16 - custom prefix or use prefix from previous message
 - 17 - generate md doc for the diff
 - 18 - mixed prompt generation (choosing if you want to split files into several contexts)
 - 19 - support special diff splitters for better context
+- 20 - plugin support

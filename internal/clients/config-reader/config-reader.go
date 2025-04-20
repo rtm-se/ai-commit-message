@@ -8,24 +8,26 @@ import (
 )
 
 type Config struct {
-	Prompt          string
-	Model           string
-	CLeanThinkBlock bool
-	SeparateDiff    bool
-	LoopPrompt      string
-	Loop            bool
-	LLMEndpoint     string
-	Interactive     bool
+	Prompt                    string
+	Model                     string
+	CLeanThinkBlock           bool
+	SeparateDiff              bool
+	LoopPrompt                string
+	Loop                      bool
+	LLMEndpoint               string
+	Interactive               bool
+	RegenerateForLengthPrompt string
+	AutoRejectLongMessages    int
 }
 
 type configBuilder struct {
-	model           *string
-	cleanThinkBlock *bool
-	separateDiff    *bool
-	loop            *bool
-	interactive     *bool
-
-	llmEndpoint *string
+	model                  *string
+	cleanThinkBlock        *bool
+	separateDiff           *bool
+	loop                   *bool
+	interactive            *bool
+	autoRejectLongMessages *int
+	llmEndpoint            *string
 }
 
 func NewConfigBuilder() *configBuilder {
@@ -62,6 +64,11 @@ func (builder *configBuilder) SetInteractive() *configBuilder {
 	return builder
 }
 
+func (builder *configBuilder) SetAutoRejectLongMessages() *configBuilder {
+	builder.autoRejectLongMessages = flag.Int("auto-reject-length", 150, "will reject messages long than certain length; <= 0 will allow any message length")
+	return builder
+}
+
 func (builder *configBuilder) BuildConfig() *Config {
 	flag.Parse()
 	if *builder.interactive {
@@ -70,17 +77,22 @@ func (builder *configBuilder) BuildConfig() *Config {
 	log.Printf("model: %v \n", *builder.model)
 	log.Printf("clean think block: %v, \n", *builder.cleanThinkBlock)
 	log.Printf("separate diff: %v \n", *builder.separateDiff)
+	if *builder.autoRejectLongMessages > 0 {
+		log.Printf("rejecting message longer than: %v symbols \n", *builder.autoRejectLongMessages)
+	}
 	if *builder.loop {
 		log.Printf("loop: %v \n", *builder.loop)
 	}
 	return &Config{
-		Model:           *builder.model,
-		CLeanThinkBlock: *builder.cleanThinkBlock,
-		SeparateDiff:    *builder.separateDiff,
-		Loop:            *builder.loop,
-		Prompt:          constants.Prompt,
-		LoopPrompt:      constants.LoopPrompt,
-		LLMEndpoint:     *builder.llmEndpoint,
-		Interactive:     *builder.interactive,
+		Model:                     *builder.model,
+		CLeanThinkBlock:           *builder.cleanThinkBlock,
+		SeparateDiff:              *builder.separateDiff,
+		Loop:                      *builder.loop,
+		Prompt:                    constants.Prompt,
+		LoopPrompt:                constants.LoopPrompt,
+		RegenerateForLengthPrompt: constants.RegenerateForLengthPrompt,
+		LLMEndpoint:               *builder.llmEndpoint,
+		AutoRejectLongMessages:    *builder.autoRejectLongMessages,
+		Interactive:               *builder.interactive,
 	}
 }
