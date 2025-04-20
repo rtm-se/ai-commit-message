@@ -9,7 +9,7 @@ import (
 
 func main() {
 	builder := config_reader.NewConfigBuilder()
-	builder.SetModelFromFlag().SetCleanThinkBlock().SetSeparateFilesFromFlag().SetLoopFromFlag().SetApiEndpointFromFlag().SetInteractive()
+	builder.SetModelFromFlag().SetCleanThinkBlock().SetSeparateFilesFromFlag().SetLoopFromFlag().SetApiEndpointFromFlag().SetInteractive().SetAutoRejectLongMessages()
 	cfg := builder.BuildConfig()
 	a := app.NewApp(cfg)
 	log.Println("ai-commit started")

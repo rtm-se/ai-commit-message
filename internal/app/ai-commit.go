@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	config_reader "github.com/rtm-se/ai-commit-message/internal/clients/config-reader"
@@ -173,7 +174,28 @@ func (a *AppAICommit) generateCommitMessage() string {
 //
 //}
 
+func (a *AppAICommit) shouldFilterMessagesByLength(messageLength int) bool {
+	if a.config.AutoRejectLongMessages <= 0 {
+		return false
+	}
+	if messageLength > a.config.AutoRejectLongMessages {
+		return true
+	}
+	return false
+}
+
+func (a *AppAICommit) regenerateCommitMessageWithLengthConstraints(message string) (string, error) {
+	response := a.getResponseFromLLM(a.config.RegenerateForLengthPrompt + strconv.Itoa(a.config.AutoRejectLongMessages) + "\n" + message)
+	if a.shouldFilterMessagesByLength(len(response)) {
+		log.Printf("Regenerated message is too long:\n%v", response)
+		return "", fmt.Errorf("[regenerateCommitMessageWithLengthConstraints]regenerated message rejected by length: %v", len(response))
+	}
+
+	return response, nil
+
+}
 func (a *AppAICommit) CreateCommit() string {
+	var err error
 	prompts := a.getPrompts()
 	if a.config.SeparateDiff {
 		log.Printf("Detected prompts: %v", len(prompts))
@@ -184,9 +206,18 @@ func (a *AppAICommit) CreateCommit() string {
 		go spn.Spin()
 		partialCommitMessage := a.getResponseFromLLM(prompt)
 		spn.Stop()
+		if a.shouldFilterMessagesByLength(len(partialCommitMessage)) {
+			log.Printf("Regenerating message:\n %v", partialCommitMessage)
+			partialCommitMessage, err = a.regenerateCommitMessageWithLengthConstraints(partialCommitMessage)
+			log.Printf("Regenerated message:\n %v", partialCommitMessage)
+			if err != nil {
+				continue
+			}
+		}
 		if len(prompts) > 1 {
 			log.Println(partialCommitMessage)
 		}
+
 		commitMessage.WriteString(partialCommitMessage)
 		commitMessage.WriteString("\n")
 	}
