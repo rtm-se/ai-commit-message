@@ -10,6 +10,8 @@ import (
 	"github.com/jonathanhecl/gollama"
 )
 
+const LLMClientName = "ollama"
+
 type apiModel struct {
 	Name string `json:"name"`
 }
@@ -32,14 +34,14 @@ func NewOllamaClient(model string, endpoint string) *OllamaClient {
 	return lama
 }
 
-func (lama *OllamaClient) GetResponse(fullPrompt string) string {
-	ctx := context.Background()
+func (lama *OllamaClient) GetResponse(ctx context.Context, fullPrompt string) (string, error) {
 	output, err := lama.client.Chat(ctx, fullPrompt)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return output.Content
+	return output.Content, nil
 }
+
 func (lama *OllamaClient) ChangeModel(model string) {
 	lama.client = gollama.New(model)
 	log.Printf("Changed ollama model to %v", model)
