@@ -3,8 +3,11 @@ package config_reader
 import (
 	"flag"
 	"log"
+	"os"
 
 	constants "github.com/rtm-se/ai-commit-message/internal"
+	"github.com/rtm-se/ai-commit-message/internal/clients/gemini"
+	"github.com/rtm-se/ai-commit-message/internal/clients/ollama"
 )
 
 type Config struct {
@@ -18,6 +21,8 @@ type Config struct {
 	Interactive               bool
 	RegenerateForLengthPrompt string
 	AutoRejectLongMessages    int
+	LLMClientName             string
+	LLMKeys                   map[string]string
 }
 
 type configBuilder struct {
@@ -28,10 +33,24 @@ type configBuilder struct {
 	interactive            *bool
 	autoRejectLongMessages *int
 	llmEndpoint            *string
+	llmKeys                map[string]string
 }
 
 func NewConfigBuilder() *configBuilder {
 	return &configBuilder{}
+}
+
+func (builder *configBuilder) CollectApiKeys() *configBuilder {
+	builder.llmKeys = map[string]string{
+		ollama.LLMClientName: "",
+		gemini.LLMClientName: os.Getenv("GEMINI_API_KEY"),
+	}
+	return builder
+}
+
+func (builder *configBuilder) SetLLMClient() *configBuilder {
+	builder.model = flag.String("llm-client", "ollama", "llm provider you want to use")
+	return builder
 }
 
 func (builder *configBuilder) SetModelFromFlag() *configBuilder {
@@ -94,5 +113,7 @@ func (builder *configBuilder) BuildConfig() *Config {
 		LLMEndpoint:               *builder.llmEndpoint,
 		AutoRejectLongMessages:    *builder.autoRejectLongMessages,
 		Interactive:               *builder.interactive,
+		LLMKeys:                   builder.llmKeys,
+		LLMClientName:             *builder.model,
 	}
 }

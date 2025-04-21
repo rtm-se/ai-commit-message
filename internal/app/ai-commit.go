@@ -1,12 +1,14 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
 	config_reader "github.com/rtm-se/ai-commit-message/internal/clients/config-reader"
+	"github.com/rtm-se/ai-commit-message/internal/clients/gemini"
 	"github.com/rtm-se/ai-commit-message/internal/clients/git"
 	"github.com/rtm-se/ai-commit-message/internal/clients/ollama"
 	"github.com/rtm-se/ai-commit-message/internal/clients/shell"
@@ -16,55 +18,51 @@ import (
 type AppAICommit struct {
 	gitClient *git_client.GitCLient
 	config    *config_reader.Config
-	Ollama    *ollama.OllamaClient
+	LLMClient LLM
 	shell     *shell.Shell
 }
 
-func NewApp(config *config_reader.Config) *AppAICommit {
+type LLM interface {
+	ChangeModel(model string)
+	GetResponse(ctx context.Context, fullPrompt string) (string, error)
+	GetCurrentModelName() string
+	GetAvailableModels() []string
+}
+
+func NewLLMClient(ctx context.Context, config *config_reader.Config) (LLM, error) {
+	switch config.LLMClientName {
+	case gemini.LLMClientName:
+		if config.LLMKeys[gemini.LLMClientName] == "" {
+			return nil, fmt.Errorf("gemini: LLM client key is required")
+		}
+		return gemini.NewGeminiClient(ctx, config.LLMKeys[gemini.LLMClientName], config.Model), nil
+	case ollama.LLMClientName:
+		//TODO: Uncomment this when there will be remote ollama with auth support
+		//if config.LLMKeys[ollama.LLMClientName] == "" {
+		//	return nil, fmt.Errorf("ollama: LLM client key is required")
+		//}
+		return ollama.NewOllamaClient(config.Model, config.LLMEndpoint), nil
+	}
+	return nil, fmt.Errorf("[NewLLMClient]LLM client name is invalid")
+}
+func NewApp(ctx context.Context, config *config_reader.Config) (*AppAICommit, error) {
 	gc := git_client.NewGitClient()
-	ol := ollama.NewOllamaClient(config.Model, config.LLMEndpoint)
 	sh := shell.NewShell()
+	llmClient, err := NewLLMClient(ctx, config)
+	if err != nil {
+		return nil, fmt.Errorf("NewLLMClient: %v", err)
+	}
 	return &AppAICommit{
 		gitClient: gc,
 		config:    config,
-		Ollama:    ol,
+		LLMClient: llmClient,
 		shell:     sh,
-	}
+	}, nil
 }
 
 func (a *AppAICommit) prepareDiff() (string, error) {
+
 	return a.gitClient.GetDiff(), nil
-}
-
-func (a *AppAICommit) prepareFullPrompt() []string {
-	fullPrompt := make([]string, 0)
-	diff := a.gitClient.GetDiff()
-	fullPrompt = append(fullPrompt, fmt.Sprintf(a.config.Prompt+diff))
-	return fullPrompt
-}
-
-func (a *AppAICommit) preparePromptsByFiles() []string {
-	diffs := a.gitClient.GetSeparatedDiffByFiles()
-	prompts := make([]string, 0)
-	for _, diff := range diffs {
-		if diff == "" {
-			continue
-		}
-		prompts = append(prompts, fmt.Sprintf(a.config.Prompt+"\n"+diff))
-	}
-	return prompts
-}
-
-func (a *AppAICommit) preparePromptsByBlocks() []string {
-	diffs := a.gitClient.GetSeparatedDiffByBlocks()
-	prompts := make([]string, 0)
-	for _, diff := range diffs {
-		if diff == "" {
-			continue
-		}
-		prompts = append(prompts, fmt.Sprintf(a.config.Prompt+"\n"+diff))
-	}
-	return prompts
 }
 
 func (a *AppAICommit) GetCommitPrefix() string {
@@ -75,43 +73,8 @@ func (a *AppAICommit) GetCommitPrefix() string {
 	return fmt.Sprintf("[%v]", ticket)
 }
 
-func (a *AppAICommit) getPrompts() []string {
-	options := []string{"full diff", "separated by files diff", "separated by blocks diff"}
-	resp := a.shell.HandleMultipleInput("What kind of model prompting should be used?\n", options)
-	switch resp {
-	case 0:
-		return a.prepareFullPrompt()
-	case 1:
-		return a.preparePromptsByFiles()
-	case 2:
-		return a.preparePromptsByBlocks()
-	default:
-		panic("Unexpected response")
-	}
-}
-
-func (a *AppAICommit) changeModel() {
-	options := a.Ollama.GetAvailableModels()
-	//TODO: track edge-case on exit from shell
-	resp := a.shell.HandleMultipleInput("What model do you want to use:", options)
-	a.Ollama.ChangeModel(options[resp])
-}
-
-func (a *AppAICommit) shouldUseDifferentModel(commitMessage string) bool {
-	options := []string{"no", "yes"}
-	questionMessage := fmt.Sprintf("%v\nCurrent Model: %v Do you want to try different model?", commitMessage, a.Ollama.GetCurrentModelName())
-	resp := a.shell.HandleMultipleInput(questionMessage, options)
-	switch resp {
-	case 0:
-		return false
-	case 1:
-		return true
-	default:
-		panic("Unexpected response")
-	}
-}
-
 func (a *AppAICommit) GetCommitMessage() (commitMessage string) {
+	a.changeModel()
 	for {
 		commitMessage = a.generateCommitMessage()
 		if !a.shouldUseDifferentModel(commitMessage) {
@@ -123,7 +86,10 @@ func (a *AppAICommit) GetCommitMessage() (commitMessage string) {
 }
 
 func (a *AppAICommit) generateCommitMessage() string {
-	InitialCommitMessage := a.CreateCommit()
+	InitialCommitMessage, err := a.CreateCommit()
+	if err != nil {
+		panic(err)
+	}
 	// TODO: fix this for long commits and re-enable it
 	//filteredCommit := a.choseWhatLinesToKeepInCommit(InitialCommitMessage)
 	//commitMessage := strings.Join(filteredCommit, "")
@@ -185,7 +151,10 @@ func (a *AppAICommit) shouldFilterMessagesByLength(messageLength int) bool {
 }
 
 func (a *AppAICommit) regenerateCommitMessageWithLengthConstraints(message string) (string, error) {
-	response := a.getResponseFromLLM(a.config.RegenerateForLengthPrompt + strconv.Itoa(a.config.AutoRejectLongMessages) + "\n" + message)
+	response, err := a.getResponseFromLLM(a.config.RegenerateForLengthPrompt + strconv.Itoa(a.config.AutoRejectLongMessages) + "\n" + message)
+	if err != nil {
+		return "", fmt.Errorf("[regenerateCommitMessageWithLengthConstraints] %v", err)
+	}
 	if a.shouldFilterMessagesByLength(len(response)) {
 		log.Printf("Regenerated message is too long:\n%v", response)
 		return "", fmt.Errorf("[regenerateCommitMessageWithLengthConstraints]regenerated message rejected by length: %v", len(response))
@@ -194,8 +163,7 @@ func (a *AppAICommit) regenerateCommitMessageWithLengthConstraints(message strin
 	return response, nil
 
 }
-func (a *AppAICommit) CreateCommit() string {
-	var err error
+func (a *AppAICommit) CreateCommit() (string, error) {
 	prompts := a.getPrompts()
 	if a.config.SeparateDiff {
 		log.Printf("Detected prompts: %v", len(prompts))
@@ -204,8 +172,11 @@ func (a *AppAICommit) CreateCommit() string {
 	spn := spinner.NewSpinner()
 	for _, prompt := range prompts {
 		go spn.Spin()
-		partialCommitMessage := a.getResponseFromLLM(prompt)
+		partialCommitMessage, err := a.getResponseFromLLM(prompt)
 		spn.Stop()
+		if err != nil {
+			return "", fmt.Errorf("[CreateCommit] %v", err)
+		}
 		if a.shouldFilterMessagesByLength(len(partialCommitMessage)) {
 			log.Printf("Regenerating message:\n %v", partialCommitMessage)
 			partialCommitMessage, err = a.regenerateCommitMessageWithLengthConstraints(partialCommitMessage)
@@ -221,53 +192,26 @@ func (a *AppAICommit) CreateCommit() string {
 		commitMessage.WriteString(partialCommitMessage)
 		commitMessage.WriteString("\n")
 	}
-	return commitMessage.String()
+	return commitMessage.String(), nil
 }
 
-func (a *AppAICommit) getResponseFromLLM(prompt string) string {
-	LLMResponse := a.Ollama.GetResponse(prompt)
+func (a *AppAICommit) getResponseFromLLM(prompt string) (string, error) {
+	ctx := context.Background()
+	LLMResponse, err := a.LLMClient.GetResponse(ctx, prompt)
+	if err != nil {
+		return "", err
+	}
 	if a.config.CLeanThinkBlock {
 		LLMResponse = a.deleteThinkBlockFromModelResponse(LLMResponse)
 	}
-	return LLMResponse
+	return LLMResponse, nil
 }
 
-func (a *AppAICommit) ShouldCommit(commitMessage string) bool {
-	options := []string{"yes", "no"}
-	questionMessage := fmt.Sprintf("%v\nshould we commit with the message above?", commitMessage)
-	responseOptionID := a.shell.HandleMultipleInput(questionMessage, options)
-	switch responseOptionID {
-	case 0:
-		return true
-	case 1:
-		return false
-	default:
-		panic("unrecognized output")
-	}
-}
-
-func (a *AppAICommit) ShouldLoopResponse(commitMessage string) bool {
-	if a.config.Interactive {
-		message := fmt.Sprintf("%v\nShould we loop back output to LLM?", commitMessage)
-		options := []string{"yes", "no"}
-		resp := a.shell.HandleMultipleInput(message, options)
-		switch resp {
-		case 0:
-			return true
-		case 1:
-			return false
-		}
-	}
-	return a.config.Loop
-}
 func (a *AppAICommit) deleteThinkBlockFromModelResponse(response string) string {
 	ss := strings.SplitAfter(response, "</think>")
 	return strings.Replace(ss[len(ss)-1], "\n", "", 2)
 }
 
-func (a *AppAICommit) Test() {
-	a.Ollama.GetAvailableModels()
-}
 func (a *AppAICommit) StageAllFiles() {
 	log.Println("Staging files")
 	err := a.gitClient.Stage()
@@ -288,7 +232,10 @@ func (a *AppAICommit) LoopForFeedback(commitMessage string) string {
 	loopPrompt := a.getLoopPrompt(commitMessage)
 	spn := spinner.NewSpinner()
 	go spn.Spin()
-	loopedBack := a.getResponseFromLLM(loopPrompt)
+	loopedBack, err := a.getResponseFromLLM(loopPrompt)
+	if err != nil {
+		panic(err)
+	}
 	spn.Stop()
 	return loopedBack
 }

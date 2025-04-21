@@ -73,12 +73,12 @@ upcoming changes:
 - ~~1 - feeding diff by files should yield better results~~
 - ~~2 - feedback loop on commit messages~~
 - ~~3 - trying different models in one go~~
-- 4 - add flags for different behaviours
-- 5 - add support for remote models
+- 4 - add flags for different behaviors
+- ~~5 - add support for remote models~~
 - 6 - support opensource local model providers
 - ~~7 - separate commits into several chunks for even better results~~
 - 8 - add better documentation for flags options
-- 9 - improve prompts for better results
+- 9 ~~- improve prompts for better results~~
 - 10 - separate config file
 - 11 - support pattern for skipping files
 - 12 - interactive mode (semi done, needs improvements)
@@ -86,7 +86,9 @@ upcoming changes:
 - 14 - support auto git diff context for smaller changes to give llm more lines to process
 - 15 - improve visibility on progress for creating commit message
 - 16 - custom prefix or use prefix from previous message
-- 17 - generate md doc for the diff
+- ~~17 - generate md doc for the diff~~(will be done as a plugin)
 - 18 - mixed prompt generation (choosing if you want to split files into several contexts)
 - 19 - support special diff splitters for better context
 - 20 - plugin support
+- 21 - add more remote model
+- 22 - stage only certain files
