@@ -6,3 +6,5 @@ const LoopPrompt = "Shorten following text to a professional short git commit me
 const RegenerateForLengthPrompt = "You will be provided with a long commit message, you need to extract the core of the message so the sum of the wouldn't exceed: {length} symbols, do not add explanation in the final answer, only the commit message"
 
 var LengthPrompt = "The length of the git commit should be no longer than %v symbols"
+
+const ConfigFileName = ".auto-commit-settings.yaml"

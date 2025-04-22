@@ -7,6 +7,7 @@ require (
 	github.com/google/generative-ai-go v0.19.0
 	github.com/jonathanhecl/gollama v1.0.27
 	google.golang.org/api v0.199.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
