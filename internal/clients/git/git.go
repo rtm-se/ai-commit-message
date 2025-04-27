@@ -40,6 +40,7 @@ func (g *GitClient) Stage() string {
 func (g *GitClient) Commit(message string) string {
 	c, b := exec.Command("git", "commit", "-m", message), new(strings.Builder)
 	c.Stdout = b
+	c.Stderr = b
 	c.Run()
 	s := strings.TrimRight(b.String(), "\n")
 	return s

@@ -17,10 +17,10 @@ func main() {
 	a, err := app.NewApp(ctx, cfg)
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 	defer func() {
 		if r := recover(); r != nil {
+			log.Printf("recovered: %v", r)
 			a.Recover()
 		}
 	}()

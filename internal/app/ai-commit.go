@@ -221,7 +221,8 @@ func (a *AppAICommit) StageAllFiles() {
 }
 
 func (a *AppAICommit) CommitWithMessage(message string) {
-	a.gitClient.Commit(message)
+	s := a.gitClient.Commit(message)
+	log.Println(s)
 	log.Printf("Changes Committed")
 }
 
