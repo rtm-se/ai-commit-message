@@ -16,7 +16,7 @@ import (
 )
 
 type AppAICommit struct {
-	gitClient *git_client.GitCLient
+	gitClient *git_client.GitClient
 	config    *config_reader.Config
 	LLMClient LLM
 	shell     *shell.Shell
@@ -46,7 +46,7 @@ func NewLLMClient(ctx context.Context, config *config_reader.Config) (LLM, error
 	return nil, fmt.Errorf("[NewLLMClient]LLM client name is invalid")
 }
 func NewApp(ctx context.Context, config *config_reader.Config) (*AppAICommit, error) {
-	gc := git_client.NewGitClient()
+	gc := git_client.NewGitClient(config)
 	sh := shell.NewShell()
 	llmClient, err := NewLLMClient(ctx, config)
 	if err != nil {
@@ -221,7 +221,8 @@ func (a *AppAICommit) StageAllFiles() {
 }
 
 func (a *AppAICommit) CommitWithMessage(message string) {
-	a.gitClient.Commit(message)
+	s := a.gitClient.Commit(message)
+	log.Println(s)
 	log.Printf("Changes Committed")
 }
 

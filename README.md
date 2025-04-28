@@ -63,10 +63,24 @@ Will try to compile project locally into ./bin directory
 bad usecases: 
 one single change in a long line
 
+## Patern skipping
+-
+- utility supports skipping some files to save on tokens or time, You need to update `~/.auto-commit-settings.yaml` file with the similar structure where message will be a commit message after prefix that will commit all add all file that math the Golnag reg-exp that you'll provide in patterns field. The commits will be added in sequence and before the main generating to clean up files that actually needs meaningful commits.   
+```yaml
+ignore_patterns:
+  - message: "updated proto"
+    patterns:
+      - ".*\\.pb\\.go$"
+      - ".*\\.pb\\.gw\\.go$"
+  - message: "added/fixed tests"
+    patterns:
+      - ".*\\_test\\.go$"
+```
+
 Pro-tips:
 -
 - Even tho deepseek-r1 is supported with local model it's not the best model for speed, use it on more trickier commits and be ready to clean up th final message
-- 
+
 
 upcoming changes:
 -
@@ -92,3 +106,4 @@ upcoming changes:
 - 20 - plugin support
 - 21 - add more remote model
 - 22 - stage only certain files
+- 23 - add verbose mode for debug

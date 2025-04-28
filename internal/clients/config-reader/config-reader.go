@@ -4,12 +4,17 @@ import (
 	"flag"
 	"log"
 	"os"
+	"regexp"
 
 	constants "github.com/rtm-se/ai-commit-message/internal"
 	"github.com/rtm-se/ai-commit-message/internal/clients/gemini"
 	"github.com/rtm-se/ai-commit-message/internal/clients/ollama"
 )
 
+type IgnoreFilesPattern struct {
+	Message  string
+	Patterns *regexp.Regexp
+}
 type Config struct {
 	Prompt                    string
 	Model                     string
@@ -23,6 +28,8 @@ type Config struct {
 	AutoRejectLongMessages    int
 	LLMClientName             string
 	LLMKeys                   map[string]string
+	IgnorePatterns            []IgnoreFilesPattern
+	flagsOverConfig           bool
 }
 
 type configBuilder struct {
@@ -34,6 +41,8 @@ type configBuilder struct {
 	autoRejectLongMessages *int
 	llmEndpoint            *string
 	llmKeys                map[string]string
+	ignorePatterns         []IgnoreFilesPattern
+	flagsOverConfig        *bool
 }
 
 func NewConfigBuilder() *configBuilder {
@@ -115,5 +124,7 @@ func (builder *configBuilder) BuildConfig() *Config {
 		Interactive:               *builder.interactive,
 		LLMKeys:                   builder.llmKeys,
 		LLMClientName:             *builder.model,
+		IgnorePatterns:            builder.ignorePatterns,
+		flagsOverConfig:           *builder.flagsOverConfig,
 	}
 }

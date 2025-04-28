@@ -51,3 +51,18 @@ func (a *AppAICommit) ShouldLoopResponse(commitMessage string) bool {
 	}
 	return a.config.Loop
 }
+
+func (a *AppAICommit) ShouldCommitIgnoredFiles() bool {
+	if a.config.Interactive {
+		message := fmt.Sprintf("Files from ignored groups detected, should the by commited by their group name?")
+		options := []string{"yes", "no"}
+		resp := a.shell.HandleMultipleInput(message, options)
+		switch resp {
+		case 0:
+			return true
+		case 1:
+			return false
+		}
+	}
+	return false
+}
