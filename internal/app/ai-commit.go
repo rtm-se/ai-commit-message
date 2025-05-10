@@ -66,6 +66,15 @@ func (a *AppAICommit) prepareDiff() (string, error) {
 }
 
 func (a *AppAICommit) GetCommitPrefix() string {
+	if a.config.CustomPrefix != "" {
+		return fmt.Sprintf("[%v]", a.config.CustomPrefix)
+	}
+	if a.config.RepeatPrefix {
+		previousCommitPrefix := a.gitClient.GePreviousCommitPrefix()
+		if previousCommitPrefix != "" {
+			return fmt.Sprintf("[%v]", previousCommitPrefix)
+		}
+	} // if no prefix | repeat message flags are set, use the ticket number from git branch name
 	currentGitBranch := a.gitClient.GetBranch()
 	trimmed := strings.SplitAfter(currentGitBranch, "/")
 	ticket := trimmed[len(trimmed)-1]

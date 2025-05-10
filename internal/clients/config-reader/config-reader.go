@@ -27,6 +27,8 @@ type Config struct {
 	RegenerateForLengthPrompt string
 	AutoRejectLongMessages    int
 	LLMClientName             string
+	CustomPrefix              string
+	RepeatPrefix              bool
 	LLMKeys                   map[string]string
 	IgnorePatterns            []IgnoreFilesPattern
 	flagsOverConfig           bool
@@ -41,6 +43,8 @@ type configBuilder struct {
 	autoRejectLongMessages *int
 	llmEndpoint            *string
 	llmKeys                map[string]string
+	customPrefix           *string
+	repeatPrefix           *bool
 	ignorePatterns         []IgnoreFilesPattern
 	flagsOverConfig        *bool
 }
@@ -82,6 +86,16 @@ func (builder *configBuilder) SetApiEndpointFromFlag() *configBuilder {
 	return builder
 }
 
+func (builder *configBuilder) CustomPrefixFromFlag() *configBuilder {
+	builder.customPrefix = flag.String("prefix", "", "custom prefix for commit will be inserted into pattern '[{{prefix}}]generated commit message' ")
+	return builder
+}
+
+func (builder *configBuilder) RepeatPrefixFromFlag() *configBuilder {
+	builder.repeatPrefix = flag.Bool("repeat-prefix", false, "repeat prefix from last commit message")
+	return builder
+}
+
 func (builder *configBuilder) SetCleanThinkBlock() *configBuilder {
 	builder.cleanThinkBlock = flag.Bool("clean-think", false, "should clean <think></think> block form model response")
 	return builder
@@ -105,6 +119,9 @@ func (builder *configBuilder) BuildConfig() *Config {
 	log.Printf("model: %v \n", *builder.model)
 	log.Printf("clean think block: %v, \n", *builder.cleanThinkBlock)
 	log.Printf("separate diff: %v \n", *builder.separateDiff)
+	log.Printf("loop: %v \n", *builder.loop)
+	log.Printf("custom prefix: %v \n", *builder.customPrefix)
+	log.Printf("repeat prefix: %v \n", *builder.repeatPrefix)
 	if *builder.autoRejectLongMessages > 0 {
 		log.Printf("rejecting message longer than: %v symbols \n", *builder.autoRejectLongMessages)
 	}
@@ -123,6 +140,8 @@ func (builder *configBuilder) BuildConfig() *Config {
 		AutoRejectLongMessages:    *builder.autoRejectLongMessages,
 		Interactive:               *builder.interactive,
 		LLMKeys:                   builder.llmKeys,
+		CustomPrefix:              *builder.customPrefix,
+		RepeatPrefix:              *builder.repeatPrefix,
 		LLMClientName:             *builder.model,
 		IgnorePatterns:            builder.ignorePatterns,
 		flagsOverConfig:           *builder.flagsOverConfig,
