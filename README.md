@@ -92,14 +92,14 @@ upcoming changes:
 - 6 - support opensource local model providers
 - ~~7 - separate commits into several chunks for even better results~~
 - 8 - add better documentation for flags options
-- 9 ~~- improve prompts for better results~~
+- ~~9 - improve prompts for better results~~
 - 10 - separate config file
-- 11 - support pattern for skipping files
+- ~~11 - support pattern for skipping files~~
 - 12 - interactive mode (semi done, needs improvements)
 - ~~13 - automatically reject messages longer than certain number of characters~~
 - 14 - support auto git diff context for smaller changes to give llm more lines to process
 - 15 - improve visibility on progress for creating commit message
-- 16 - custom prefix or use prefix from previous message
+- ~~16 - custom prefix or use prefix from previous message~~
 - ~~17 - generate md doc for the diff~~(will be done as a plugin)
 - 18 - mixed prompt generation (choosing if you want to split files into several contexts)
 - 19 - support special diff splitters for better context

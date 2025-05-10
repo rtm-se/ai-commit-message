@@ -11,6 +11,7 @@ import (
 )
 
 const DiffBlockRE = "@@[^a-z]+[+|-]+[0-9]+[^a-z]+@@"
+const MessagePatternRE = "^\\[(\\S*)\\].*"
 
 type GitClient struct {
 	IgnorePattern []config_reader.IgnoreFilesPattern
@@ -120,6 +121,21 @@ func (g *GitClient) filterFilesByPattern(pattern regexp.Regexp, files []string) 
 		}
 	}
 	return matchedFiles
+}
+
+// GePreviousCommitPrefix returns the prefix of previous commit
+func (g *GitClient) GePreviousCommitPrefix() string {
+	c, b := exec.Command("git", "log", "-n", "1", "--pretty=tformat:%s"), new(strings.Builder)
+	c.Stdout = b
+	c.Run()
+	re := regexp.MustCompile(MessagePatternRE)
+	matches := re.FindAllStringSubmatch(b.String(), -1)
+	if matches[0] != nil {
+		return matches[0][1]
+	} else {
+		return ""
+	}
+
 }
 
 func (g *GitClient) UnstageAll() {

@@ -12,7 +12,7 @@ func main() {
 	ctx := context.Background()
 	builder := config_reader.NewConfigBuilder()
 	builder.SetModelFromFlag().SetCleanThinkBlock().SetSeparateFilesFromFlag().SetLoopFromFlag().SetApiEndpointFromFlag().SetInteractive().SetAutoRejectLongMessages().SetLLMClient().CollectApiKeys()
-	builder.CollectSettingsFromConfigFile()
+	builder.CollectSettingsFromConfigFile().CustomPrefixFromFlag().RepeatPrefixFromFlag()
 	cfg := builder.BuildConfig()
 	a, err := app.NewApp(ctx, cfg)
 	if err != nil {
