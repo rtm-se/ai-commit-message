@@ -44,6 +44,15 @@ func (s *Spinner) Stop() {
 	s.showCursor()
 }
 
+func (s *Spinner) ClearScreen() {
+	fmt.Print("\033[H\033[2J")
+}
+
+func (s *Spinner) ShowPhraseBeforeSpinner(phrase string) {
+	s.ClearScreen()
+	fmt.Print(phrase + " ")
+}
+
 // should be run in Gorutine
 func (s *Spinner) Spin() {
 	if s.stop == nil {
@@ -55,6 +64,7 @@ func (s *Spinner) Spin() {
 	for {
 		select {
 		case <-s.stop:
+			s.clearLine()
 			return
 		default:
 			for _, character := range spinAnimation {

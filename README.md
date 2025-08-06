@@ -98,7 +98,7 @@ upcoming changes:
 - 12 - interactive mode (semi done, needs improvements)
 - ~~13 - automatically reject messages longer than certain number of characters~~
 - 14 - support auto git diff context for smaller changes to give llm more lines to process
-- 15 - improve visibility on progress for creating commit message
+- ~~15 - improve visibility on progress for creating commit message~~
 - ~~16 - custom prefix or use prefix from previous message~~
 - ~~17 - generate md doc for the diff~~(will be done as a plugin)
 - 18 - mixed prompt generation (choosing if you want to split files into several contexts)
@@ -107,3 +107,5 @@ upcoming changes:
 - 21 - add more remote model
 - 22 - stage only certain files
 - 23 - add verbose mode for debug
+- 24 - history aware commit generation option
+- 25 - pre-hook for folder with sh commands to check if commit is ready to be pushed (pass/fail)
