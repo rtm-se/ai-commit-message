@@ -50,7 +50,7 @@ func (s *Spinner) ClearScreen() {
 
 func (s *Spinner) ShowPhraseBeforeSpinner(phrase string) {
 	s.ClearScreen()
-	fmt.Print(phrase + " ")
+	fmt.Print(phrase)
 }
 
 // should be run in Gorutine
