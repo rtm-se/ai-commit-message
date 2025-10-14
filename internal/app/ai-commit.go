@@ -179,7 +179,9 @@ func (a *AppAICommit) CreateCommit() (string, error) {
 	}
 	commitMessage := strings.Builder{}
 	spn := spinner.NewSpinner()
-	for _, prompt := range prompts {
+	for i, prompt := range prompts {
+		phrase := commitMessage.String() + fmt.Sprintf("working on prompt %v/%v", i+1, len(prompts))
+		spn.ShowPhraseBeforeSpinner(phrase + " ")
 		go spn.Spin()
 		partialCommitMessage, err := a.getResponseFromLLM(prompt)
 		spn.Stop()
